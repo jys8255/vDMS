@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 
 {% load custom_filters %}
@@ -11,7 +11,7 @@
             <h1>Search for Logging Data</h1>
         </div>
         <div style="display: flex; justify-content: center;">
-            <form action="{% url 'registerapp:search' %}" method="get">
+            <form id="searchForm" action="{% url 'registerapp:search' %}" method="get">
 
                  <select name="eADP">
                     <option value="">Select eADP</option>
@@ -59,6 +59,12 @@
 
 
                 <input type="submit" value="Search">
+
+                <button type="button" onclick="resetSearchFormAndSubmit()" style="margin-left: 10px; border: none; background-color: transparent; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> Reset and Search
+                </button>
+
+
             </form>
         </div>
         <div style="margin: 1rem;">
@@ -128,18 +134,6 @@
         </div>
     </div>
 </div>
+<script src="{% static 'js/search.js' %}"></script>
 
-
-<script>
-function redirectToLink(fileName) {
-    var baseUrl = "https://drive.google.com/drive/folders/";
-    if (fileName.startsWith("eADP1")) {
-        window.open(baseUrl + "1RypsKXLeQKT8OJzLgcEMEzZ_rgxJ3kn4", '_blank').focus();
-    } else if (fileName.startsWith("eADP2")) {
-        window.open(baseUrl + "1SKv2KJNbeee-C9VIjHmnsAUqN305TbemuEj", '_blank').focus();
-    } else if (fileName.startsWith("eADP3")) {
-        window.open(baseUrl + "1SWfjNf5FaVPRC0pw5rwqissy9eRRU3kI", '_blank').focus();
-    }
-}
-</script>
 {% endblock %}
