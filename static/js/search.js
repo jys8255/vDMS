@@ -18,3 +18,4 @@ function resetSearchFormAndSubmit() {
     // 모든 select 입력이 초기화된 상태에서 폼을 제출합니다.
     document.getElementById('searchForm').submit();
 }
+

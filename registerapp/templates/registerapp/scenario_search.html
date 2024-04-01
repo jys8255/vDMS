@@ -4,6 +4,14 @@
 
 {% load custom_filters %}
 
+<style>
+    .file-link:hover {
+        color: #7A297B;
+        cursor: pointer;
+        font-weight: bold;
+    }
+</style>
+
 <div style="display: flex; justify-content: center;">
 
     <div style="height: 100%; width: 150rem; background-color: #F7F7F7; border-radius: 1rem; margin: 3rem;">
@@ -60,8 +68,8 @@
 
                 <input type="submit" value="Search">
 
-                <button type="button" onclick="resetSearchFormAndSubmit()" style="margin-left: 10px; border: none; background-color: transparent; cursor: pointer;">
-                    <i class="fas fa-sync-alt"></i> Reset and Search
+                <button class="file-link" type="button" onclick="resetSearchFormAndSubmit()" style="margin-left: 10px; border: none; background-color: transparent; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> Reset
                 </button>
 
 
@@ -117,7 +125,7 @@
                         </td>
                         <td style="border: 1px solid #ddd; padding: 1px; text-align: center;">{{ scenario.file_name }}</td>
                         <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
-                            <a href="#" onclick="redirectToLink('{{ scenario.file_name|extract_path_from_filename }}')">{{ scenario.file_name|extract_path_from_filename }}</a>
+                            <a href="#"  class="file-link" onclick="redirectToLink('{{ scenario.file_name|extract_path_from_filename }}')">{{ scenario.file_name|extract_path_from_filename }}</a>
                         </td>
 <!--                        <td style="border: 1px solid #ddd; padding: 1px; text-align: center;">-->
 <!--                            {{ scenario.file_name|extract_path_from_filename }}-->
