@@ -6,5 +6,5 @@ app_name = 'registerapp'
 urlpatterns = [
     path('register/', upload_files, name='register'),
     path('search/', search_scenarios, name='search'),
-    path('homepage/', homepage, name='homepage'),
+    path('home/', homepage, name='homepage'),
 ]

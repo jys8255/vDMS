@@ -2,13 +2,60 @@
 
 <style>
 
+    .dropbtn {
+    background-color: #186A8A;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+/* 드롭다운 메뉴 컨테이너 */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* 드롭다운 내용 */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+/* 드롭다운 버튼에 마우스를 올리면 드롭다운 내용을 표시 */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* 활성 드롭다운 버튼 스타일 */
+.dropdown:hover .dropbtn {
+    font-weight: bold;
+    background-color: #2A92BD;
+}
     .logo-container {
         text-align: center;
         margin-top: 1rem;
     }
 
     .logo-container img {
-        width: 10rem;
+        width: 15rem;
         height: auto;
     }
 
@@ -21,37 +68,64 @@
 
     .file-link:hover, .nav-link:hover,
     .logout-button.btn.btn-link:hover {
-        color: #7A297B;
-        cursor: pointer;
+        color: black;
+        cursor: pointer;F
         font-weight: bold;
+    }
+
+    .active-link {
+        color: white !important; /* Overrides other color styles */
+    }
+
+     body {
+        background-color: #f8f9fa;
     }
 </style>
 
-<div style="display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
 
-    <div class="logo-container">
-        <span>
+<div style="display: flex; flex-direction: column; justify-content: center; margin-top: 2rem;">
+    <div class="logo-container" style="margin-bottom: 1rem;">
         <img src="{% static 'logo/adus_logo.png' %}">
-        </span>
-        {% if user.is_authenticated %}
-        <span>
-            사용자 : {{ request.user }}
-        </span>
-        {% endif %}
     </div>
-
 
     {% if user.is_authenticated %}
-    <div style="display: flex; justify-content: space-evenly; margin: 1rem;">
+    <div style="display: flex; justify-content: center; gap: 10px;">
+        <i class="fas fa-user-circle" style="font-size: 24px;"></i>
+        <span style="font-family: 'Open Sans', sans-serif; font-size: 20px;">
+        {{ request.user }}
+        </span>
 
-        <form action="{% url 'accountapp:logout' %}" method="post">
+        <form action="{% url 'accountapp:logout' %}" method="post" style="display: inline;">
             {% csrf_token %}
-            <button type="submit" class="logout-button btn btn-link" style="color: black; text-decoration: none;">|Logout|</button>
+            <button type="submit" class="logout-button btn btn-link" style="color: black; text-decoration: none; padding: 0; border: none; background: none;">
+                <span>| Logout |</span>
+            </button>
         </form>
-        <a href="{% url 'registerapp:homepage' %}" class="nav-link">|HomePage|</a>
-        <a href="{% url 'registerapp:register' %}" class="nav-link">|Register|</a>
-        <a href="{% url 'registerapp:search' %}" class="nav-link">|Search|</a>
-
     </div>
     {% endif %}
+
 </div>
+
+
+<div style="display: flex; justify-content: center;">
+    {% if user.is_authenticated %}
+    <div style="
+        display: flex; justify-content: space-evenly; align-items: center;
+        margin: 2rem; height: 4.5rem; background-color: #186A8A;
+        border-radius:1rem; margin: 2rem;width: 150rem;
+        font-family: 'Arial', sans-serif; ">
+
+         <div class="dropdown">
+            <a href="#" class="nav-link dropbtn" style="color: white; font-size: 25px;">|vDMS|</a>
+            <!-- 드롭다운 콘텐츠 -->
+            <div class="dropdown-content">
+                <a href="{% url 'registerapp:register' %}" class="nav-link">|Register|</a>
+                <a href="{% url 'registerapp:search' %}" class="nav-link">|Search|</a>
+            </div>
+        </div>
+
+        <a href="{% url 'registerapp:homepage' %}" class="nav-link" style="color: white; font-size: 25px;">|vFMS|</a>
+        <a href="{% url 'registerapp:homepage' %}" class="nav-link" style="color: white; font-size: 25px;">|home|</a>
+    </div>
+</div>
+    {% endif %}

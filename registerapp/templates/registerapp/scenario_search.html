@@ -6,19 +6,21 @@
 
 <style>
     .file-link:hover {
-        color: #7A297B;
+        color: #106DA4;
         cursor: pointer;
-        text-shadow: 0 0 1px #7A297B;
+        text-shadow: 0 0 1px #106DA4;
     }
 </style>
 
 <div style="display: flex; justify-content: center;">
 
-    <div style="height: 100%; width: 150rem; background-color: #F7F7F7; border-radius: 1rem; margin: 3rem;">
+    <div style="height: 100%; width: 150rem; background-color: #FFFFFF; border-radius: 1rem; margin: 3rem; ">
         <div style="display: flex; justify-content: center; margin : 2rem;">
-            <h1>Search for Logging Data</h1>
+
+                <h1>Search for Logging Data</h1>
+
         </div>
-        <div style="display: flex; justify-content: center;">
+        <div style="display: flex; justify-content: center; font-size: 1.4rem;">
             <form id="searchForm" action="{% url 'registerapp:search' %}" method="get">
 
                  <select name="eADP">
@@ -76,8 +78,8 @@
             </form>
         </div>
         <div style="margin: 1rem;">
-            <table style="border-collapse: collapse; width: 100%; border: 2px solid #0D0D0D;">
-                <thead style="text-align: center; width: 100%; border: 2px solid #0D0D0D; background-color: #DDE4E7">
+            <table style="border-collapse: collapse; width: 100%; border: 2px solid #0D0D0D; font-size: 20px;">
+                <thead style="text-align: center; width: 100%; border: 2px solid #0D0D0D; background-color: #DDE4E7;">
                     <tr>
                         <th>ID</th>
                         <th>eADP</th>
@@ -100,18 +102,18 @@
                 <tbody>
                     {% for scenario in scenarios %}
                     <tr>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.id }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.eADP }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.project_code }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.location }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.simulation_type }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.test_Scenario_ID }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.sw_version }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.weather }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.road_type }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.sun_status }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.temperature }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.id }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.eADP }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.project_code }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.location }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.simulation_type }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.test_Scenario_ID }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.sw_version }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.weather }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.road_type }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.sun_status }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.temperature }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">
                             {% for dtc_code in scenario.dtc_code.all %}
                             {{ dtc_code.name }}
                             {% if not forloop.last %}, {% endif %}
@@ -124,10 +126,10 @@
                             {% endfor %}
                         </td>
                         <td style="border: 1px solid #ddd; padding: 1px; text-align: center;">{{ scenario.file_name }}</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">
                             <a href="#"  class="file-link" onclick="redirectToLink('{{ scenario.file_name|extract_path_from_filename }}')">{{ scenario.file_name|extract_path_from_filename }}</a>
                         </td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{{ scenario.user }}</td>
+                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.user }}</td>
                     </tr>
                     {% empty %}
                     <tr>

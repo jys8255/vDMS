@@ -3,31 +3,38 @@
 {% block content %}
 <meta name="csrf-token" content="{{ csrf_token }}">
 
-<div style="display: flex; justify-content: center;">
+<div style="display: flex; justify-content: center; margin-top :3rem;">
 
-    <div style="height: 40rem; width: 40rem; background-color: #F7F7F7; border-radius: 1rem; margin: 1rem;">
-        <div style="font-size: 20pt; margin: 2rem; display: flex; justify-content: center;">
-            UPLOAD JSON
+    <div style="height: 40rem; width: 40rem; background-color: #FFFFFF; border-radius: 1rem; margin: 1rem; border: 1px solid #1E6988;">
+        <div style="display: flex; justify-content: center; margin : 2rem;">
+            <h1>Drop here!</h1>
         </div>
 
         <div style="display: flex; justify-content: center;">
             <div id="drop-box" class="drop-box"
-                 style="margin: 2rem;
-                 display: flex; justify-content: center;
-                 height: 20rem;
-                 width: 20rem;
-                 border: 3px dashed #007bff; border-radius: 5px;
-                 display: flex; align-items: center;
-                 justify-content: center; color: #007bff; font-size: 16pt;">
-                PUT JSON
+                 style=" margin: 5rem; display: flex; justify-content: center;
+                 height: 20rem; width: 20rem; border: 3px dashed #196CA1; border-radius: 3rem;
+                 align-items: center; justify-content: center; color: #196CA1; font-size: 50pt;">
+                +
             </div>
         </div>
-        <div id="message-container" style="display: flex; justify-content: center;
-            align-items: center; flex-direction: column;">
-            <div id="message" style="font-size: 16pt; margin: 1rem;"></div>
-            <button id="uploadBtn" style="display: none;">Save</button>
+
+    </div>
+
+    <div style="min-height: 40rem; width: 40rem; background-color: #FFFFFF; border-radius: 1rem; margin: 1rem; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #1E6988;">
+        <div style="display: flex; justify-content: center; margin : 2rem;">
+            <h1>Upload files</h1>
+        </div>
+        <div id="message-container" style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
+            <div id="message" style="font-size: 16pt; margin: 1rem; padding: 20px;"></div>
+            <button id="uploadBtn" class="btn btn-info col-6 mt-3"
+                    style="margin-bottom:3rem; margin-left: auto; margin-right: auto; display:none; background-color: #1E6988;
+                           font-size : 15pt; color: white; ">
+                Save
+            </button>
         </div>
     </div>
+
 </div>
 
 <!-- pair 경고 모달 -->
@@ -85,8 +92,8 @@
         중복된 파일이 있습니다. 어떻게 하시겠습니까?
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="skipDuplicates">Skip Duplicates</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" id="overwriteDuplicates">Overwrite</button>
+        <button type="button" class="btn btn-warning" data-dismiss="modal" id="skipDuplicates">Skip Duplicates</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal" id="overwriteDuplicates">Overwrite</button>
       </div>
     </div>
   </div>

@@ -68,11 +68,13 @@ function checkFilePairsAndUpload(files) {
 
 //업로드 파일:
 function updateMessageBox(files) {
-    messageBox.innerHTML = '업로드 예정 파일: <br>';
+    const messageBox = document.getElementById('message');
     files.forEach(file => {
-        messageBox.innerHTML += `<div>${file.name}</div>`;
+        messageBox.innerHTML += `<li>${file.name}</li>`;
     });
-    // 파일이 올바르게 드롭된 후에만 업로드 버튼을 표시
+    messageBox.innerHTML += '</ul>';
+    // 파일이 올바르게 드롭된 후에만 'uploadBtn' 버튼을 표시
+    const uploadBtn = document.getElementById('uploadBtn');
     uploadBtn.style.display = 'block';
 }
 
