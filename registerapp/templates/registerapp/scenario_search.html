@@ -78,28 +78,28 @@
             </form>
         </div>
         <div style="margin: 1rem;">
-            <table style="border-collapse: collapse; width: 100%; border: 2px solid #0D0D0D; font-size: 20px;">
-                <thead style="text-align: center; width: 100%; border: 2px solid #0D0D0D; background-color: #DDE4E7;">
+            <table style="border-collapse: collapse; width: 100%; border: 3px solid #0D0D0D; font-size: 1.1rem;">
+                <thead style="text-align: center; background-color: #DDE4E7;">
                     <tr>
-                        <th>ID</th>
-                        <th>eADP</th>
-                        <th>Project Code</th>
-                        <th>Location</th>
-                        <th>Simulation Type</th>
-                        <th>Test Scenario ID</th>
-                        <th>SW Version</th>
-                        <th>Weather</th>
-                        <th>Road Type</th>
-                        <th>Sun Status</th>
-                        <th>Temperature</th>
-                        <th>Dtc Code</th>
-                        <th>Error Component ID</th>
-                        <th>File Name</th>
-                        <th>File Save Path</th>
-                        <th>Name</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">ID</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">eADP</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Project Code</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Location</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Simulation Type</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Test Scenario ID</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">SW Version</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Weather</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Road Type</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Sun Status</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Temperature</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Dtc Code</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Error Component ID</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">File Name</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">File Save Path</th>
+                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Name</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody style="border: 3px solid #0D0D0D;">
                     {% for scenario in scenarios %}
                     <tr>
                         <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.id }}</td>
