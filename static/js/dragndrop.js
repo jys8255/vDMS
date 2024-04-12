@@ -34,27 +34,30 @@ function handleFiles(files) {
 //파일쌍 체크 함수
 function checkFilePairsAndUpload(files) {
     const jsonFiles = new Set();
-    const matFiles = new Set();
-    const missingPairs = [];
+    const otherFiles = new Map();
 
     files.forEach(file => {
         const baseName = file.name.split('.').slice(0, -1).join('.');
-        if (file.name.endsWith('.json')) {
+        const extension = file.name.split('.').pop();
+
+        if (extension === 'json') {
             jsonFiles.add(baseName);
-        } else if (file.name.endsWith('.mat')) {
-            matFiles.add(baseName);
+        } else {
+            otherFiles.set(baseName, extension);
         }
     });
+
+    const missingPairs = [];
 
     jsonFiles.forEach(baseName => {
-        if (!matFiles.has(baseName)) {
-            missingPairs.push(`${baseName}.mat 파일이 필요합니다.`);
+        if (!otherFiles.has(baseName)) {
+            missingPairs.push(`${baseName} (필요한 파일: 다른 확장자 파일)`);
         }
     });
 
-    matFiles.forEach(baseName => {
+    otherFiles.forEach((extension, baseName) => {
         if (!jsonFiles.has(baseName)) {
-            missingPairs.push(`${baseName}.json 파일이 필요합니다.`);
+            missingPairs.push(`${baseName}.json (필요한 파일: JSON 파일)`);
         }
     });
 
