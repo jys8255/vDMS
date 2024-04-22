@@ -1,8 +1,10 @@
 import json, os
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
 from .models import Scenario
 import logging
 
@@ -11,75 +13,72 @@ logger = logging.getLogger('django')
 @login_required
 @csrf_protect
 def upload_files(request):
-    logger.info("upload_files 뷰가 호출되었습니다.")
+    logger.info("Upload files view called.")
     if request.method == 'GET':
         return render(request, 'registerapp/register.html')
     elif request.method == 'POST':
-        logger.info("POST 요청 처리 시작")
+        logger.info("Processing POST request")
         files = request.FILES.getlist('files[]')
-        overwrite = request.POST.get('overwrite', 'false').lower() == 'true'
+        base_folder = request.POST.get('base_folder', '')
+        overwrite = json.loads(request.POST.get('overwrite', 'false'))
 
-        file_dict = {}
-        for file in files:
-            base_name = file.name.rsplit('.', 1)[0]
-            file_dict.setdefault(base_name, []).append(file)
+        file_paths = [generate_file_path(file.name, base_folder) for file in files]
+        existing_files = [file_path for file_path in file_paths if os.path.exists(file_path)]
+        new_files = [file for file, file_path in zip(files, file_paths) if file_path not in existing_files]
 
-        missing_files = []
-        for base_name, files in file_dict.items():
-            if len(set(f.name.split('.')[-1] for f in files)) == 1:
-                missing_files.append(f"{base_name} (필요한 파일: 상응하는 확장자 파일)")
+        if existing_files and not overwrite:
+            return JsonResponse({
+                'error': 'Duplicates detected',
+                'duplicates': [os.path.basename(path) for path in existing_files]
+            }, status=409)
 
-        if missing_files:
-            return JsonResponse({'error': 'Missing file pairs', 'missing_files': missing_files}, status=400)
+        results = []
+        for file, file_path in zip(files, file_paths):
+            if file_path in existing_files and not overwrite:
+                results.append({'status': 'error', 'message': 'File exists and overwrite not allowed',
+                                'file': os.path.basename(file_path)})
+            else:
+                result = handle_uploaded_file(file, request.user, file_path, overwrite)
+                results.append(result)
 
-        base_save_path = "G:/공유 드라이브/010_ADUS/220_Development/910_Data/010_LoggingData/900_Legacy/"
-        duplicate_files = []
-
-        for base_name, files in file_dict.items():
-            for file in files:
-                file_path = os.path.join(base_save_path, file.name)
-                logger.info(f"file_path: {file_path}")
-                if os.path.exists(file_path) and not overwrite:
-                    duplicate_files.append(file.name)
-
-        if duplicate_files:
-            return JsonResponse({'status': 'duplicate', 'duplicate_files': duplicate_files}, status=409)
-
-        upload_results = []
-        for base_name, files in file_dict.items():
-            for file in files:
-                if not overwrite and file.name in duplicate_files:
-                    continue
-                upload_result = handle_uploaded_file(file, request.user, base_save_path, overwrite)
-                upload_results.append(upload_result)
-
-        success_uploads = [result for result in upload_results if result['status'] == 'success']
-        error_uploads = [result for result in upload_results if result['status'] == 'error']
-
-        if error_uploads:
-            return JsonResponse({'error': 'Some files failed to process', 'details': error_uploads}, status=500)
-
-        return JsonResponse({'success': True, 'uploadedFiles': success_uploads})
+        return JsonResponse({
+            'success': True,
+            'uploaded_files': [result['file'] for result in results if result['status'] == 'success'],
+            'errors': [result for result in results if result['status'] == 'error']
+        })
 
 
-def handle_uploaded_file(file, user, base_save_path, overwrite):
-    save_path = os.path.join(base_save_path, file.name)
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+def generate_file_path(filename, base_folder):
+    base_path = "G:/공유 드라이브/010_ADUS/220_Development/910_Data/010_LoggingData/"
+    folder = "999_Others"  # Default 폴더
+    if 'eADP(eADM1)' in filename:
+        folder = "101_eADP_eADM1"
+    elif 'eADP(TCar)' in filename:
+        folder = "100_eADP_TCar"
+    elif 'ETC' in filename:
+        folder = "200_Etc"
 
-    if os.path.exists(save_path) and not overwrite:
-        return {'status': 'error', 'message': f'File already exists and overwrite is not allowed: {file.name}'}
+    complete_path = os.path.join(base_path, folder, base_folder, filename)
+    logger.info(f"Generated file path: {complete_path}")
+    return complete_path
 
+
+def handle_uploaded_file(file, user, save_path, overwrite):
     try:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        if os.path.exists(save_path) and not overwrite:
+            logger.warning(f"File already exists and overwrite not allowed: {file.name}")
+            return {'status': 'error', 'message': f'File already exists and overwrite not allowed: {file.name}',
+                    'file': file.name}
+
         with open(save_path, 'wb+') as destination:
             for chunk in file.chunks():
                 destination.write(chunk)
 
-        # 바이너리 쓰기 후 텍스트로 읽기 위해 파일을 닫았다가 다시 엽니다.
         if file.name.endswith('.json'):
-            with open(save_path, 'r', encoding='utf-8') as json_file:  # UTF-8 인코딩 지정
+            with open(save_path, 'r', encoding='utf-8') as json_file:
                 data = json.load(json_file)
-
-                scenario, created = Scenario.objects.update_or_create(
+                Scenario.objects.update_or_create(
                     file_name=file.name,
                     defaults={
                         'user': user,
@@ -98,14 +97,20 @@ def handle_uploaded_file(file, user, base_save_path, overwrite):
                         'description': data.get('description', '')
                     }
                 )
-        return {'status': 'success', 'message': file.name}
-    except json.JSONDecodeError as e:
-        return {'status': 'error', 'message': f'JSON decode error - {str(e)}'}
-    except FileNotFoundError:
-        return {'status': 'error', 'message': 'File not found error'}
+        return {'status': 'success', 'message': f'File {file.name} uploaded successfully', 'file': file.name}
     except Exception as e:
-        return {'status': 'error', 'message': str(e)}
-@login_required
+        logger.exception("Failed to upload file")
+        return {'status': 'error', 'message': str(e), 'file': file.name}
+
+@require_POST
+def check_duplicate(request):
+    data = json.loads(request.body)
+    file_path = data.get('filePath')
+    is_duplicate = os.path.exists(file_path)
+    return JsonResponse({'isDuplicate': is_duplicate})
+
+
+
 def search_scenarios(request):
     query_params = {
         'test_case_id': request.GET.get('test_case_id', ''),
@@ -119,16 +124,19 @@ def search_scenarios(request):
         'road_status': request.GET.get('road_status', ''),
         'sun_status': request.GET.get('sun_status', ''),
         'test_mode': request.GET.get('test_mode', ''),
-        'temperature': request.GET.get('temperature', '')
+        'temperature': request.GET.get('temperature', ''),
+        'user': request.GET.get('user', ''),
     }
 
     scenarios = Scenario.objects.all()
     for param, value in query_params.items():
         if value:
-            scenarios = scenarios.filter(**{f'{param}__icontains': value})
+            if param == 'user':
+                scenarios = scenarios.filter(user__username__icontains=value)
+            else:
+                scenarios = scenarios.filter(**{f'{param}__icontains': value})
 
     return render(request, 'registerapp/scenario_search.html', {'scenarios': scenarios})
-
 @login_required
 def homepage(request):
     return render(request, 'registerapp/home.html', {})

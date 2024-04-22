@@ -110,7 +110,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-LOGIN_REDIRECT_URL = 'registerapp:homepage'
+LOGIN_REDIRECT_URL = 'registerapp:register'
 LOGOUT_REDIRECT_URL = 'accountapp:login'
 
 

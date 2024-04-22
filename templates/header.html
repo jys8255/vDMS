@@ -1,131 +1,114 @@
 {% load static %}
 
 <style>
-
-    .dropbtn {
-    background-color: #186A8A;
-    color: white;
-    padding: 16px;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-}
-
-/* 드롭다운 메뉴 컨테이너 */
-.dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-/* 드롭다운 내용 */
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-}
-
-
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    text-align: left;
-}
-
-
-.dropdown-content a:hover {background-color: #f1f1f1}
-
-/* 드롭다운 버튼에 마우스를 올리면 드롭다운 내용을 표시 */
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-/* 활성 드롭다운 버튼 스타일 */
-.dropdown:hover .dropbtn {
-    font-weight: bold;
-    background-color: #2A92BD;
-}
-    .logo-container {
-        text-align: center;
-        margin-top: 1rem;
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #F2F2F2;
+        color: black;
+        font-size: 20px;
     }
+
+    .header-left, .header-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
 
     .logo-container img {
-        width: 15rem;
-        height: auto;
+        height: 100px;
+        width: auto;
     }
 
-    a:link, a:visited, a:hover, a:active,
-    .logout-button.btn.btn-link {
-        font-size: 1.2rem;
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 23px;
+    }
+
+    .menu-bar {
+        display: flex;
+        gap: 20px;
+    }
+
+    .dropdown {
+        position: relative;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        min-width: 160px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown-content a {
         color: black;
+        padding: 12px 16px;
         text-decoration: none;
+        display: block;
     }
 
-    .file-link:hover, .nav-link:hover,
-    .logout-button.btn.btn-link:hover {
-        color: black;
-        cursor: pointer;F
+    .dropdown-content a:hover { background-color: #F2F2F2; }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dropdown:hover .dropbtn, .nav-link:hover {
         font-weight: bold;
     }
 
-    .active-link {
-        color: white !important; /* Overrides other color styles */
+    .nav-link, .dropbtn {
+        background: none;
+        border: none;
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
     }
 
-     body {
-        background-color: #F2F2F2;
+    .logout-button {
+        background: none;
+        border: none;
+        color: black;
+        cursor: pointer;
+        text-decoration: underline;
     }
+
 </style>
 
-
-<div style="display: flex; flex-direction: column; justify-content: center; margin-top: 2rem;">
-    <div class="logo-container" style="margin-bottom: 1rem;">
-        <img src="{% static 'logo/adus_logo.png' %}">
-    </div>
-
-    {% if user.is_authenticated %}
-    <div style="display: flex; justify-content: center; gap: 10px;">
-        <i class="fas fa-user-circle" style="font-size: 24px;"></i>
-        <span style="font-family: 'Open Sans', sans-serif; font-size: 20px;">
-        {{ request.user }}
-        </span>
-
-        <form action="{% url 'accountapp:logout' %}" method="post" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="logout-button btn btn-link" style="color: black; text-decoration: none; padding: 0; border: none; background: none;">
-                <span>| Logout |</span>
-            </button>
-        </form>
-    </div>
-    {% endif %}
-
-</div>
-
-
-<div style="display: flex; justify-content: center;">
-    {% if user.is_authenticated %}
-    <div style="
-        display: flex; justify-content: space-evenly; align-items: center;
-        margin: 2rem; height: 4.5rem; background-color: #186A8A;
-        border-radius:1rem; margin: 2rem;width: 150rem;
-        font-family: 'Arial', sans-serif; ">
-
-         <div class="dropdown">
-            <a href="#" class="nav-link dropbtn" style="color: white; font-size: 25px;">|vDMS|</a>
-            <!-- 드롭다운 콘텐츠 -->
-            <div class="dropdown-content">
-                <a href="{% url 'registerapp:register' %}" class="nav-link">|Register|</a>
-                <a href="{% url 'registerapp:search' %}" class="nav-link">|Search|</a>
-            </div>
+<div class="header-container">
+    <div class="header-left">
+        <div class="logo-container">
+            <img src="{% static 'logo/adus_logo.png' %}">
         </div>
-
-        <a href="{% url 'registerapp:homepage' %}" class="nav-link" style="color: white; font-size: 25px;">|vFMS|</a>
-        <a href="{% url 'registerapp:homepage' %}" class="nav-link" style="color: white; font-size: 25px;">|home|</a>
+        {% if user.is_authenticated %}
+        <div class="menu-bar">
+            <div class="dropdown">
+                <button class="dropbtn">|vDMS|</button>
+                <div class="dropdown-content">
+                    <a href="{% url 'registerapp:register' %}">|Register|</a>
+                    <a href="{% url 'registerapp:search' %}">|Search|</a>
+                </div>
+            </div>
+            <a href="{% url 'registerapp:homepage' %}" class="nav-link">|vFMS|</a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="header-right">
+        {% if user.is_authenticated %}
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span>{{ request.user }}</span>
+        </div>
+        <form action="{% url 'accountapp:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
+        {% endif %}
     </div>
 </div>
-    {% endif %}

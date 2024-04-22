@@ -5,7 +5,11 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 const fileModal = $('#fileModal');
 const successModal = $('#successModal');
 const duplicateFileModal = $('#duplicateFileModal');
+const removeDuplicatesBtn = document.getElementById('removeDuplicatesBtn');
 const uploadBtn = document.getElementById('uploadBtn');
+const overwriteBtn = document.getElementById('overwriteBtn');
+
+let baseFolder = '';
 
 dropBox.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -13,171 +17,211 @@ dropBox.addEventListener('dragover', (e) => {
 });
 
 dropBox.addEventListener('dragleave', (e) => {
-    dropBox.style.backgroundColor = "#F7F7F7";
-});
-
-dropBox.addEventListener('drop', (e) => {
     e.preventDefault();
-    dropBox.style.backgroundColor = "#F7F7F7";
-    const files = e.dataTransfer.files;
-    if (files.length) {
-        handleFiles(files);
+    dropBox.style.backgroundColor = "#FFFFFF";
+});
+
+/////드랍 파일 처리/////
+dropBox.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    dropBox.style.backgroundColor = "#FFFFFF";
+    const items = e.dataTransfer.items;
+    baseFolder = '';
+    messageBox.innerHTML = '';
+    uploadedFiles = [];
+
+    await Promise.all(Array.from(items).map(item => processEntry(item.webkitGetAsEntry())));
+
+      if (uploadedFiles.length > 0) {
+       console.log('2.uploadedFiles length:',uploadedFiles.length)
+        if (uploadedFiles.some(file => file.isDuplicate)) {
+        console.log('Uploaded files:', uploadedFiles);
+        console.log('Duplicates present:', uploadedFiles.some(file => file.isDuplicate));
+            uploadBtn.style.display = 'none';
+            overwriteBtn.style.display = 'block';
+            removeDuplicatesBtn.style.display = 'block';
+        } else {
+            uploadBtn.style.display = 'block';
+            removeDuplicatesBtn.style.display = 'none';
+            overwriteBtn.style.display = 'none';
+        }
+    } else {
+        uploadBtn.style.display = 'none';
+        removeDuplicatesBtn.style.display = 'none';
+        overwriteBtn.style.display = 'none';
     }
 });
 
-function handleFiles(files) {
-    uploadedFiles = [...files];
-    checkFilePairsAndUpload(uploadedFiles);
 
+async function processEntry(entry, path = "") {
+    return new Promise((resolve, reject) => {
+        if (entry.isFile) {
+            entry.file(async file => {
+                await processFile(file, path);
+                resolve();
+            }, reject);
+        } else if (entry.isDirectory) {
+            let dirReader = entry.createReader();
+            dirReader.readEntries(async (entries) => {
+                await Promise.all(entries.map(ent => processEntry(ent, path + entry.name + "/")));
+                resolve();
+            }, reject);
+        }
+    });
 }
 
-//파일쌍 체크 함수
-function checkFilePairsAndUpload(files) {
-    const jsonFiles = new Set();
-    const otherFiles = new Map();
 
-    files.forEach(file => {
-        const baseName = file.name.split('.').slice(0, -1).join('.');
-        const extension = file.name.split('.').pop();
+async function processFile(file, path) {
+    console.log('AA:Processing file:', file.name);  // 파일 처리 시작 로그
 
-        if (extension === 'json') {
-            jsonFiles.add(baseName);
+    baseFolder = path.replace(/\/$/, '');
+    const completePath = generateFilePath(file.name, baseFolder);
+
+    try {
+        const isDuplicate = await checkDuplicate(completePath);
+        console.log('Duplicate check for', file.name, ':', isDuplicate);  // 중복 검사 결과 로그
+
+        const displayPath = path + file.name;
+        console.log('Display Path:', displayPath);
+
+        if (isDuplicate) {
+            console.log('Duplicate file found:', file.name);
+            displayFileMessage(displayPath, true);
+            uploadedFiles.push({ file: file, path: displayPath, baseFolder: baseFolder, isDuplicate: true });
         } else {
-            otherFiles.set(baseName, extension);
+            console.log('No duplicates, file added:', file.name);
+            displayFileMessage(displayPath, false);
+            uploadedFiles.push({ file: file, path: displayPath, baseFolder: baseFolder, isDuplicate: false });
         }
-    });
-
-    const missingPairs = [];
-
-    jsonFiles.forEach(baseName => {
-        if (!otherFiles.has(baseName)) {
-            missingPairs.push(`${baseName} (필요한 파일: 다른 확장자 파일)`);
-        }
-    });
-
-    otherFiles.forEach((extension, baseName) => {
-        if (!jsonFiles.has(baseName)) {
-            missingPairs.push(`${baseName}.json (필요한 파일: JSON 파일)`);
-        }
-    });
-
-    if (missingPairs.length > 0) {
-        displayMissingPairsModal(missingPairs);
-    } else {
-        updateMessageBox(files);
+    } catch (error) {
+        console.error("Error processing file", file.name, ":", error);  // 에러 로그
     }
 }
+/////드랍 파일 처리/////
 
-
-//업로드 파일:
-function updateMessageBox(files) {
-    const messageBox = document.getElementById('message');
-    files.forEach(file => {
-        messageBox.innerHTML += `<li>${file.name}</li>`;
-    });
-    messageBox.innerHTML += '</ul>';
-    // 파일이 올바르게 드롭된 후에만 'uploadBtn' 버튼을 표시
-    const uploadBtn = document.getElementById('uploadBtn');
-    uploadBtn.style.display = 'block';
-}
-
-//파일쌍 경고 모달
-function displayMissingPairsModal(missingPairs) {
-    const missingPairsList = document.getElementById('missingPairs');
-    missingPairsList.innerHTML = missingPairs.join('<br>');
-    fileModal.modal('show');
-}
-//save 클릭 리스너
+////////버튼들///////////
 uploadBtn.addEventListener('click', () => {
     if (uploadedFiles.length > 0) {
-        uploadFiles(uploadedFiles, false);
+        uploadFiles(uploadedFiles.map(u => u.file), false, baseFolder);
     } else {
-        alert('업로드할 파일을 먼저 드래그 앤 드롭하세요.');
+        alert('Please drag and drop files first.');
     }
 });
-//main 파일 업로드 로직
-function uploadFiles(files, overwrite) {
+
+removeDuplicatesBtn.addEventListener('click', () => {
+    const filesBefore = uploadedFiles.length;
+    uploadedFiles = uploadedFiles.filter(file => !file.isDuplicate);
+    const filesAfter = uploadedFiles.length;
+
+    messageBox.innerHTML = '';  // 메시지 박스 초기화
+    uploadedFiles.forEach(file => {
+        displayFileMessage(file.path, false);
+    });
+
+    console.log('Files after removing duplicates:', uploadedFiles.map(file => file.path));
+    removeDuplicatesBtn.style.display = 'none';
+    overwriteBtn.style.display = 'none';
+
+    if (filesBefore > filesAfter) {
+        alert(`${filesBefore - filesAfter} duplicate file(s) removed.`);
+    } else {
+        alert('No duplicates to remove.');
+    }
+
+    if (uploadedFiles.length > 0) {
+        uploadBtn.style.display = 'block';
+    } else {
+        uploadBtn.style.display = 'none';
+    }
+});
+
+overwriteBtn.addEventListener('click', () => {
+    if (uploadedFiles.length > 0) {
+        uploadFiles(uploadedFiles.map(u => u.file), true, baseFolder);
+    } else {
+        alert('Please drag and drop files first.');
+    }
+});
+////////버튼들///////////
+
+///중복 검사 위치 생성///
+function generateFilePath(filename, baseFolder) {
+    const basePath = "G:/공유 드라이브/010_ADUS/220_Development/910_Data/010_LoggingData/";
+    let folder = "999_Others";
+    if (filename.includes('eADP(eADM1)')) {
+        folder = "101_eADP_eADM1";
+    } else if (filename.includes('eADP(TCar)')) {
+        folder = "100_eADP_TCar";
+    } else if (filename.includes('ETC')) {
+        folder = "200_Etc";
+    }
+    const completePath = `${basePath}${folder}/${baseFolder}/${filename}`;
+    return completePath;
+}
+///중복 검사 위치 생성///
+
+async function checkDuplicate(filePath) {
+    try {
+        const response = await fetch('/register/check-duplicate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ filePath })
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.isDuplicate;
+    } catch (error) {
+        console.error("Error checking duplicate:", error);
+        return false;  // Assume not duplicate if error occurs
+    }
+}
+
+function displayUploadedFiles() {
+    messageBox.innerHTML = '';
+    uploadedFiles.forEach(file => {
+        const messageColor = file.isDuplicate ? 'style="color:red;"' : '';
+        messageBox.innerHTML += `<li ${messageColor}>${file.path}</li>`;
+    });
+}
+
+function displayFileMessage(filePath, isDuplicate) {
+    const messageColor = isDuplicate ? 'style="color:red;"' : '';
+    messageBox.innerHTML += `<li ${messageColor}>${filePath}</li>`;
+}
+function uploadFiles(files, overwrite, currentBaseFolder) {
+    console.log('10.uploadedFiles:',currentBaseFolder)
     const formData = new FormData();
     files.forEach(file => {
         formData.append('files[]', file);
     });
-    formData.append('overwrite', overwrite ? 'true' : 'false');
-
-
-    messageBox.innerHTML = ''; // 중복 검사 전 메시지 박스 초기화
-    uploadBtn.style.display = 'none'; // 중복 검사 중엔 Save 버튼 숨김
+    formData.append('base_folder', currentBaseFolder); //ex)240415
+    formData.append('overwrite', overwrite);
+    messageBox.innerHTML = '';
 
     fetch('/register/register/', {
         method: 'POST',
         body: formData,
         headers: { 'X-CSRFToken': csrfToken },
     })
-    .then(response => {
-        if (response.status === 409) {
-            // 중복 파일이 존재하면, 중복 파일 처리 모달을 표시
-            return response.json().then(data => {
-                showDuplicateFilesModal(data.duplicate_files, files);
-            });
-
-        } else if (response.ok) {
-            return response.json();
-
-        } else {
-            alert('서버 오류가 발생했습니다. 관리자에게 문의하세요.');
-            throw new Error('서버가 200이 아닌 상태 코드로 응답했습니다');
-
-        }
-    })
+    .then(response => response.json())
     .then(data => {
-        if (data && data.success) {
-            // 중복 파일이 없고 파일 업로드가 성공했을 때만 "업로드된 파일:" 문구를 업데이트하고 성공 모달을 표시
-            updateMessageBox(uploadedFiles);
+        if (data.success) {
+            successModal.find('.modal-body').text('파일이 성공적으로 업로드 됐습니다.');
+            successModal.modal('show');
             uploadBtn.style.display = 'none';
-            displaySuccessModal(data.uploadedFiles);
-
+            overwriteBtn.style.display = 'none';
+            removeDuplicatesBtn.style.display = 'none';
+        } else if (data.error) {
+            displayDuplicateFilesModal(data.duplicate_files, files);
         }
     })
     .catch(error => {
-    console.error('오류:', error);
-    alert('처리 중 문제가 발생했습니다. 다시 시도해 주세요.');
-  });
-}
-
-//중복파일 선택받는 모달
-function showDuplicateFilesModal(duplicateFiles, allFiles) {
-    let message = "<ul>" + duplicateFiles.map(file => `<li>${file}</li>`).join("") + "</ul><br>파일이 이미 존재합니다.<br>저장 방식을 선택하세요.";
-    $('#duplicateFileModal .modal-body').html(message);
-    $('#duplicateFileModal').modal('show');
-
-    // 'Skip Duplicates' 버튼 이벤트 핸들러
-    $('#duplicateFileModal #skipDuplicates').off('click').on('click', function() {
-        // 중복되지 않은 파일만 필터링하여 업로드
-        const filteredFiles = allFiles.filter(file => !duplicateFiles.includes(file.name));
-        if(filteredFiles.length > 0) {
-            uploadFiles(filteredFiles, false);
-            uploadBtn.style.display = 'none';// 중복되지 않은 파일만 업로드
-        } else {
-            alert('모든 파일이 이미 존재합니다.');
-        }
-        $('#duplicateFileModal').modal('hide');
-        uploadBtn.style.display = 'none';// 중복되지 않은 파일만 업로드
-    });
-
-    // 'Overwrite' 버튼 이벤트 핸들러
-    $('#duplicateFileModal #overwriteDuplicates').off('click').on('click', function() {
-        uploadFiles(uploadedFiles, true);
-        $('#duplicateFileModal').modal('hide');
-        uploadBtn.style.display = 'none';
-    });
-
-}
-
-//파일 성공 모달
-function displaySuccessModal(uploadedFiles) {
-    const successMessage = '파일 업로드가 성공적으로 완료되었습니다.';
-    $('#successModal .modal-body').text(successMessage);
-    messageBox.innerHTML = '';
-    uploadBtn.style.display = 'none';
-    successModal.modal('show');
-
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    })
 }

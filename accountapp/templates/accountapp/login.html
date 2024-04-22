@@ -2,11 +2,12 @@
 {% load bootstrap4 %}
 {% block content %}
 
-<div style="text-align: center; margin: 4rem auto;">
+<div style="text-align: center; margin: 4rem auto; display: flex; justify-content: center;">
     {% if user.is_authenticated %}
         <h1>(미정)</h1>
     {% else %}
-     <div style="height: auto; width: 35rem; background-color: #FFFFFF; border-radius: 1rem; padding: 2rem; display: flex; flex-direction: column;">
+     <div style="height: auto; width: 35rem; display: flex; flex-direction: column;
+                 background-color: #FFFFFF; border-radius: 1rem; padding: 2rem;">
 
         <div>
             <h1>Login</h1>

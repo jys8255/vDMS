@@ -1,44 +1,105 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-{% load custom_filters %}
 
+<!--폼 다시제출-->
+<script>
+<!--    검색 초기화-->
+    function customReset() {
+        var form = document.getElementById('searchForm');
+        Array.from(form.elements).forEach(function(element) {
+            if (element.type === 'select-one' || element.type === 'select-multiple') {
+                const defaultValue = element.options[0].value;
+                element.value = defaultValue;
+            } else if (element.type === 'checkbox' || element.type === 'radio') {
+                element.checked = element.defaultChecked;
+            } else if (element.type === 'text' || element.type === 'textarea') {
+                element.value = '';
+            }
+        });
+        form.submit();
+    }
+
+    function submitForm() {
+        var form = document.getElementById('searchForm');
+        var shouldSubmit = Array.from(form.elements).some(element => {
+            return ((element.type === 'text' || element.type === 'select-one') && element.value.trim() !== '');
+        });
+        if (shouldSubmit) {
+            form.submit();
+        }
+    }
+<!--    선택된 select  배경색 변경-->
+    function updateSelectBackground(selectElement) {
+        selectElement.style.backgroundColor = selectElement.value ? '#D6EAF8' : '';
+    }
+
+<!--    배경 색 변경 함수 호출-->
+    document.addEventListener('DOMContentLoaded', function () {
+        Array.from(document.querySelectorAll('select')).forEach(select => {
+            updateSelectBackground(select);
+            select.addEventListener('change', function() {
+                updateSelectBackground(this);
+            });
+        });
+    });
+</script>
 <style>
     .file-link:hover {
         color: #106DA4;
         cursor: pointer;
         text-shadow: 0 0 1px #106DA4;
     }
+    @keyframes sparkle {
+        0%, 100% {
+            color: gray;
+            text-shadow: none;
+            font-weight: normal;
+        }
+        50% {
+            color: #004B6B;
+            text-shadow: 0 0 8px white;
+            font-weight: bold;
+        }
+    }
+
+    .sparkle-text {
+        text-align: center;
+        color: gray;
+        margin-top: 1rem;
+        animation: sparkle 2s linear infinite;
+    }
 </style>
 
 <div style="display: flex; justify-content: center;">
 
-    <div style="height: 100%; width: 150rem; background-color: #FFFFFF; border-radius: 1rem; margin: 3rem; ">
+    <div style="height: 100%; width: 100%; background-color: #FFFFFF; border-radius: 1rem; margin-top: 5rem; ">
         <div style="display: flex; justify-content: center; margin : 2rem;">
 
                 <h1>Search for Logging Data</h1>
 
         </div>
-        <div style="display: flex; justify-content: center; font-size: 1.4rem;">
+<!--        카데고리 바-->
+        <div style="display: flex; justify-content: center; font-size: 1.2rem;">
             <form id="searchForm" action="{% url 'registerapp:search' %}" method="get">
 
-                <select name="eADP">
+                <select name="eADP" onchange="submitForm()">
                     <option value="">Select eADP</option>
                     <option value="eADP(eADM1)" {% if request.GET.eADP == "eADP(eADM1)" %} selected {% endif %}>eADP(eADM1)</option>
                     <option value="eADP(TCar)" {% if request.GET.eADP == "eADP(TCar)" %} selected {% endif %}>eADP(TCar)</option>
                     <option value="ETC" {% if request.GET.eADP == "ETC" %} selected {% endif %}>ETC</option>
                 </select>
 
-                <select name="project_code">
+                <select name="project_code" onchange="submitForm()">
                     <option value="">Select Project Code</option>
-                   <option value="eADM(LGMOT)" {% if request.GET.project_code == "eADM(LGMOT)" %}selected{% endif %}>eADM(LGMOT)</option>
+                    <option value="eADM(LGMOT)" {% if request.GET.project_code == "eADM(LGMOT)" %}selected{% endif %}>eADM(LGMOT)</option>
                     <option value="SIeVCU(LGMOT)" {% if request.GET.project_code == "SIeVCU(LGMOT)" %}selected{% endif %}>SIeVCU(LGMOT)</option>
                     <option value="SIeVCU(HSCity)" {% if request.GET.project_code == "SIeVCU(HSCity)" %}selected{% endif %}>SIeVCU(HSCity)</option>
                     <option value="SIeVCU(TIPS)" {% if request.GET.project_code == "SIeVCU(TIPS)" %}selected{% endif %}>SIeVCU(TIPS)</option>
                     <option value="ETC" {% if request.GET.project_code == "ETC" %}selected{% endif %}>ETC</option>
                 </select>
 
-                <select name="sw_version">
+                <select name="sw_version" onchange="submitForm()">
                     <option value="">Select SW Version</option>
                      <option value="eChFVer0.4" {% if request.GET.sw_version == "eChFVer0.4" %}selected{% endif %}>eChFVer0.4</option>
                     <option value="eChFVer1.0" {% if request.GET.sw_version == "eChFVer1.0" %}selected{% endif %}>eChFVer1.0</option>
@@ -46,7 +107,7 @@
                     <option value="eChFVer1.2" {% if request.GET.sw_version == "eChFVer1.2" %}selected{% endif %}>eChFVer1.2</option>
                 </select>
 
-                <select name="weather">
+                <select name="weather" onchange="submitForm()">
                     <option value="">Select Weather</option>
                     <option value="Sunny" {% if request.GET.weather == "Sunny" %}selected{% endif %}>Sunny</option>
                     <option value="Rainy" {% if request.GET.weather == "Rainy" %}selected{% endif %}>Rainy</option>
@@ -57,7 +118,7 @@
                     <option value="Haze" {% if request.GET.weather == "Haze" %}selected{% endif %}>Haze</option>
                 </select>
 
-                <select name="road_type">
+                <select name="road_type" onchange="submitForm()">
                     <option value="">Select Road Type</option>
                     <option value="Asphalt" {% if request.GET.road_type == "Asphalt" %}selected{% endif %}>Asphalt</option>
                     <option value="Concrete" {% if request.GET.road_type == "Concrete" %}selected{% endif %}>Concrete</option>
@@ -65,98 +126,94 @@
                     <option value="Dirt" {% if request.GET.road_type == "Dirt" %}selected{% endif %}>Dirt</option>
                 </select>
 
-                <select name="road_status">
-                    <option value="">Select Road Type</option>
-                    <option value="Dry" {% if request.GET.road_type == "Dry" %}selected{% endif %}>Dry</option>
-                    <option value="Wet" {% if request.GET.road_type == "Wet" %}selected{% endif %}>Wet</option>
-                    <option value="Snow" {% if request.GET.road_type == "Snow" %}selected{% endif %}>Snow</option>
-                    <option value="Ice" {% if request.GET.road_type == "Ice" %}selected{% endif %}>Ice</option>
+                <select name="road_status" onchange="submitForm()">
+                    <option value="">Select Road Status</option>
+                    <option value="Dry" {% if request.GET.road_status == "Dry" %}selected{% endif %}>Dry</option>
+                    <option value="Wet" {% if request.GET.road_status == "Wet" %}selected{% endif %}>Wet</option>
+                    <option value="Snow" {% if request.GET.road_status == "Snow" %}selected{% endif %}>Snow</option>
+                    <option value="Ice" {% if request.GET.road_status == "Ice" %}selected{% endif %}>Ice</option>
                 </select>
 
-                <select name="sun_status">
-                    <option value="">Select Road Type</option>
-                    <option value="Midday" {% if request.GET.road_type == "Midday" %}selected{% endif %}>Midday</option>
-                    <option value="Dawn" {% if request.GET.road_type == "Dawn" %}selected{% endif %}>Dawn</option>
-                    <option value="Sunset/Sunrise" {% if request.GET.road_type == "Sunset/Sunrise" %}selected{% endif %}>Sunset/Sunrise</option>
-                    <option value="Evening" {% if request.GET.road_type == "Evening" %}selected{% endif %}>Evening</option>
-                    <option value="Night" {% if request.GET.road_type == "Night" %}selected{% endif %}>Night</option>
+                <select name="sun_status" onchange="submitForm()">
+                    <option value="">Select Sun Status</option>
+                    <option value="Midday" {% if request.GET.sun_status == "Midday" %}selected{% endif %}>Midday</option>
+                    <option value="Dawn" {% if request.GET.sun_status == "Dawn" %}selected{% endif %}>Dawn</option>
+                    <option value="Sunset/Sunrise" {% if request.GET.sun_status == "Sunset/Sunrise" %}selected{% endif %}>Sunset/Sunrise</option>
+                    <option value="Evening" {% if request.GET.sun_status == "Evening" %}selected{% endif %}>Evening</option>
+                    <option value="Night" {% if request.GET.sun_status == "Night" %}selected{% endif %}>Night</option>
                 </select>
 
-                <select name="test_mode">
-                    <option value="">Select Road Type</option>
-                    <option value="VIL" {% if request.GET.road_type == "VIL" %}selected{% endif %}>VIL</option>
-                    <option value="MIL(ADT)" {% if request.GET.road_type == "MIL(ADT)" %}selected{% endif %}>MIL(ADT)</option>
-                    <option value="PIL" {% if request.GET.road_type == "PIL" %}selected{% endif %}>PIL</option>
-                    <option value="HIL(Morai)" {% if request.GET.road_type == "HIL(Morai)" %}selected{% endif %}>HIL(Morai)</option>
+                <select name="test_mode" onchange="submitForm()">
+                    <option value="">Select Test Mode</option>
+                    <option value="VIL" {% if request.GET.test_mode == "VIL" %}selected{% endif %}>VIL</option>
+                    <option value="MIL(ADT)" {% if request.GET.test_mode == "MIL(ADT)" %}selected{% endif %}>MIL(ADT)</option>
+                    <option value="PIL" {% if request.GET.test_mode == "PIL" %}selected{% endif %}>PIL</option>
+                    <option value="HIL(Morai)" {% if request.GET.test_mode == "HIL(Morai)" %}selected{% endif %}>HIL(Morai)</option>
                 </select>
 
-                <select name="temperature">
-                    <option value="">Select Road Type</option>
-                    <option value="10°C~20°C" {% if request.GET.road_type == "10°C~20°C" %}selected{% endif %}>10°C~20°C</option>
-                    <option value="<-0°C" {% if request.GET.road_type == "<-0°C" %}selected{% endif %}><-0°C</option>
-                    <option value="0°C~10°C" {% if request.GET.road_type == "0°C~10°C" %}selected{% endif %}>0°C~10°C</option>
-                    <option value="20°C~30°C" {% if request.GET.road_type == "20°C~30°C" %}selected{% endif %}>20°C~30°C</option>
-                    <option value="30°C<" {% if request.GET.road_type == "30°C<" %}selected{% endif %}>30°C<</option>
+                <select name="temperature" onchange="submitForm()">
+                    <option value="">Select Temperature</option>
+                    <option value="10°C~20°C" {% if request.GET.temperature == "10°C~20°C" %}selected{% endif %}>10°C~20°C</option>
+                    <option value="<-0°C" {% if request.GET.temperature == "<-0°C" %}selected{% endif %}><-0°C</option>
+                    <option value="0°C~10°C" {% if request.GET.temperature == "0°C~10°C" %}selected{% endif %}>0°C~10°C</option>
+                    <option value="20°C~30°C" {% if request.GET.temperature == "20°C~30°C" %}selected{% endif %}>20°C~30°C</option>
+                    <option value="30°C<" {% if request.GET.temperature == "30°C<" %}selected{% endif %}>30°C<</option>
                 </select>
 
+                <input type="text" name="location" value="{{ request.GET.location }}" placeholder="장소 입력 후 Enter" onkeypress="if(event.keyCode == 13) {submitForm(); return false;}">
+                <input type="text" name="user" value="{{ request.GET.user }}" placeholder="작성자 입력 후 Enter" onkeypress="if(event.keyCode == 13) {submitForm(); return false;}">
 
-                 <input type="text" name="username" value="{{ request.GET.username }}" placeholder="Username">
 
-
-                <input type="submit" value="Search">
-
-                <button class="file-link" type="button" onclick="resetSearchFormAndSubmit()" style="margin-left: 10px; border: none; background-color: transparent; cursor: pointer;">
+                <button type="button" onclick="customReset()" class="file-link" style="border: none; background-color: transparent; cursor: pointer;">
                     <i class="fas fa-sync-alt"></i> Reset
                 </button>
-
-
             </form>
         </div>
+<!--        테이블시작-->
+        {% if request.GET.eADP or request.GET.project_code or request.GET.sw_version or request.GET.weather or request.GET.road_type or request.GET.road_status or request.GET.sun_status or request.GET.test_mode or request.GET.temperature or request.GET.user %}
         <div style="margin: 1rem;">
             <table style="border-collapse: collapse; width: 100%; border: 3px solid #0D0D0D; font-size: 1.1rem;">
                 <thead style="text-align: center; background-color: #DDE4E7;">
                     <tr>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Test Case ID</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">실험자</th>
-
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">eADP ID</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Project Code</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Location</th>
-
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">SW Version</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Weather</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Road Type</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Road Status</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Sun Status</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Test Mode</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">Temperature</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">비고</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">File Name</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">파일 열기</th>
-                        <th style="border: 1px solid #ddd; padding: 5px; text-align: center;">작성자</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Test Case ID</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">실험자</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">eADP ID</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Project Code</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Location</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">SW Version</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Weather</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Road Type</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Road Status</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Sun Status</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Test Mode</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">Temperature</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">비고</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">File Name</th>
+                        <th style="border: 1px solid #ddd; padding: 3px; text-align: center;">작성자</th>
                     </tr>
                 </thead>
                 <tbody style="border: 3px solid #0D0D0D;">
                     {% for scenario in scenarios %}
                     <tr>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.test_case_ids }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.usernames }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.eADP }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.project_code }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.location }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.sw_version }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.weather }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.road_type }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.road_status }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.sun_status }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.test_mode }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.temperature }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.description }}</td>
-                        <td style="border: 1px solid #ddd; padding: 1px; text-align: center;">{{ scenario.file_name }}</td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">
-                            <a href="#"  class="file-link" onclick="redirectToLink('{{ scenario.file_name|extract_path_from_filename }}')">{{ scenario.file_name|extract_path_from_filename }}</a>
-                        </td>
-                        <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">{{ scenario.user }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.test_case_ids }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.usernames }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.eADP }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.project_code }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.location }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.sw_version }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.weather }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.road_type }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.road_status }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.sun_status }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.test_mode }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.temperature }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.description }}</td>
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">
+                            <a href="#" class="file-link" onclick="redirectToLink('{{ scenario.file_name }}')">
+                                {{ scenario.file_name }}
+                            </a>
+
+                        <td style="border: 1px solid #ddd; padding: 3px; text-align: center;">{{ scenario.user }}</td>
                     </tr>
                     {% empty %}
                     <tr>
@@ -166,8 +223,12 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <p class="sparkle-text">필드를 선택하면 데이터가 여기에 표시됩니다.</p>
+        {% endif %}
     </div>
 </div>
+
 <script src="{% static 'js/search.js' %}"></script>
 
 {% endblock %}
