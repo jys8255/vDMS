@@ -123,7 +123,7 @@ removeDuplicatesBtn.addEventListener('click', () => {
     overwriteBtn.style.display = 'none';
 
     if (filesBefore > filesAfter) {
-        alert(`${filesBefore - filesAfter} duplicate file(s) removed.`);
+        alert(`${filesBefore - filesAfter} 개의 중복 파일이 제거 되었습니다.`);
     } else {
         alert('No duplicates to remove.');
     }
@@ -221,7 +221,9 @@ function uploadFiles(files, overwrite, currentBaseFolder) {
         }
     })
     .catch(error => {
+        uploadBtn.style.display = 'none';
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        alert('G드라이브가 연결되어있지 않습니다.');
+
     })
 }
